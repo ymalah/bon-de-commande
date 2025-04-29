@@ -5,6 +5,7 @@
   <title>Bon de Commande VTC</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
       font-family: 'Montserrat', sans-serif;
@@ -137,6 +138,7 @@
     <h2>BON DE COMMANDE</h2>
     <p id="texteFacture"></p>
     <button onclick="copierTexte()" class="btn">📋 Copier le texte</button>
+    <button onclick="telechargerPDF()" class="btn">⬇️ Télécharger en PDF</button>
   </div>
 </div>
 
@@ -209,6 +211,15 @@
     navigator.clipboard.writeText(texte).then(() => {
       alert("Texte copié !");
     });
+  }
+
+  function telechargerPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const texte = document.getElementById("texteFacture").innerText;
+    const lignes = doc.splitTextToSize(texte, 180);
+    doc.text(lignes, 15, 20);
+    doc.save("bon_commande_vtc.pdf");
   }
 </script>
 
