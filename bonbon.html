@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Bon de Commande VTC</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f8f8f8;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+    }
+    .btn {
+      background: black;
+      color: white;
+      padding: 10px;
+      margin-top: 20px;
+      border: none;
+      width: 100%;
+      cursor: pointer;
+    }
+    .facture {
+      background: white;
+      padding: 20px;
+      margin-top: 30px;
+      border: 1px solid #ccc;
+      text-align: justify;
+      white-space: pre-line;
+    }
+    ul.suggestions {
+      background: white;
+      border: 1px solid #ccc;
+      list-style: none;
+      padding: 0;
+      max-height: 100px;
+      overflow-y: auto;
+      margin-top: 0;
+      position: absolute;
+      z-index: 10;
+      width: 100%;
+    }
+    ul.suggestions li {
+      padding: 5px;
+      cursor: pointer;
+    }
+    ul.suggestions li:hover {
+      background: #eee;
+    }
+    .input-wrapper {
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Bon de Commande VTC</h1>
+
+  <form id="commandeForm" autocomplete="off">
+    <div class="input-wrapper">
+      <label>Adresse de départ</label>
+      <input type="text" id="depart" required>
+      <ul id="suggestions-depart" class="suggestions" style="display:none;"></ul>
+    </div>
+
+    <div class="input-wrapper">
+      <label>Adresse d’arrivée</label>
+      <input type="text" id="arrivee" required>
+      <ul id="suggestions-arrivee" class="suggestions" style="display:none;"></ul>
+    </div>
+
+    <label>Date de la course</label>
+    <input type="date" id="dateCourse" required>
+
+    <label>Heure</label>
+    <input type="time" id="heure" required>
+
+    <label>Nombre de passagers</label>
+    <input type="number" id="passagers" required min="1">
+
+    <label>Nombre de bagages</label>
+    <input type="number" id="bagages" required min="0">
+
+    <label>Montant TTC (€)</label>
+    <input type="number" id="prix" required min="0">
+
+    <label>Mode de paiement</label>
+    <select id="paiement">
+      <option value="CB">CB</option>
+      <option value="Espèces">Espèces</option>
+      <option value="Virement">Virement</option>
+    </select>
+
+    <button type="submit" class="btn">Générer le bon de commande</button>
+  </form>
+
+  <div id="facture" class="facture" style="display:none;">
+    <h2>BON DE COMMANDE</h2>
+    <p id="texteFacture"></p>
+    <button onclick="copierTexte()" class="btn">📋 Copier le texte</button>
+  </div>
+
+  <script>
+    const adresses = [
+      "Gare Viotte, Besançon", "Gare TGV Franche-Comté", "Aéroport Dole-Jura",
+      "Hôpital Jean Minjoz", "Polyclinique de Franche-Comté", "Centre-ville de Besançon",
+      "Place du 8 Septembre", "Zone Témis", "Micropolis", "Citadelle de Besançon",
+      "Centre Commercial Châteaufarine", "Université de Franche-Comté", "Hôtel Victor Hugo",
+      "Fort de Bregille", "Monument de la Libération", "Chapelle des Buis", "Malcombe",
+      "Saint-Ferjeux", "CHU Saint-Jacques", "Centre Hospitalier de Novillars",
+      "Ecole Nationale d'Industrie Laitière", "Rue de Vesoul", "Boulevard Blum",
+      "Palente", "Planoise", "La Bouloie", "Saint-Claude", "Battant"
+    ];
+
+    function autocomplete(inputId, suggestionId) {
+      const input = document.getElementById(inputId);
+      const suggestionBox = document.getElementById(suggestionId);
+
+      input.addEventListener("input", function() {
+        const value = this.value.toLowerCase();
+        suggestionBox.innerHTML = '';
+        if (value) {
+          const filtered = adresses.filter(addr => addr.toLowerCase().includes(value));
+          filtered.forEach(addr => {
+            const li = document.createElement('li');
+            li.textContent = addr;
+            li.onclick = () => {
+              input.value = addr;
+              suggestionBox.style.display = "none";
+            };
+            suggestionBox.appendChild(li);
+          });
+          suggestionBox.style.display = "block";
+        } else {
+          suggestionBox.style.display = "none";
+        }
+      });
+
+      document.addEventListener('click', function(e) {
+        if (!input.contains(e.target) && !suggestionBox.contains(e.target)) {
+          suggestionBox.style.display = 'none';
+        }
+      });
+    }
+
+    autocomplete("depart", "suggestions-depart");
+    autocomplete("arrivee", "suggestions-arrivee");
+
+    document.getElementById("commandeForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const depart = document.getElementById("depart").value;
+      const arrivee = document.getElementById("arrivee").value;
+      const date = document.getElementById("dateCourse").value;
+      const heure = document.getElementById("heure").value;
+      const passagers = document.getElementById("passagers").value;
+      const bagages = document.getElementById("bagages").value;
+      const prix = document.getElementById("prix").value;
+      const paiement = document.getElementById("paiement").value;
+
+      const texte = `
+BON DE COMMANDE
+
+Adresse de départ : ${depart}
+Adresse d'arrivée : ${arrivee}
+Date de la course : ${date}
+Heure de la course : ${heure}
+Nombre de passagers : ${passagers}
+Nombre de bagages : ${bagages}
+Montant TTC : ${prix} €
+Mode de paiement : ${paiement}
+
+Cette réservation a été effectuée préalablement à la prestation conformément à l'article R3120-2 du Code des Transports et à l'arrêté du 30 juillet 2013 relatif aux activités de VTC.
+
+VTC Besançon Elite Transports
+Chauffeur : MALAH Younes
+Véhicule : Toyota C-HR - Plaque : FG-725-WQ
+      `;
+
+      document.getElementById("texteFacture").innerText = texte.trim();
+      document.getElementById("facture").style.display = "block";
+      window.scrollTo(0, document.body.scrollHeight);
+    });
+
+    function copierTexte() {
+      const texte = document.getElementById("texteFacture").innerText;
+      navigator.clipboard.writeText(texte).then(() => {
+        alert("Texte copié !");
+      });
+    }
+  </script>
+
+</body>
+</html>
